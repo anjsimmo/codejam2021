@@ -66,7 +66,18 @@ cost_perms = [
   (-2, 20)
 ]
 
+# as an extra measure, also add all flipped pairs of cost permuntations
 cost_perms += [(j, i) for i, j in cost_perms]
+
+def test_valid(S_masked, S):
+    # check that S only modifies "?" character, not the rest of the string.
+    # e.g. CCC is not a valid solution to CJ?
+    if len(S_masked) != len(S):
+        return False
+    for a, b in zip(S_masked, S):
+        if a != "?" and a != b:
+            return False
+    return True
 
 def do_test(L):
     print(f"Begin tests of perms up to length {L}")
@@ -77,13 +88,16 @@ def do_test(L):
                 actual_cost = eval_cost(X, Y, S)
                 solved_cost = solve(X, Y, S_masked)
                 filled = fill(X, Y, S_masked)
-                if solved_cost > actual_cost:
-                    print(f"ERROR: {X}, {Y}, {S_masked}. Actual: {S} {actual_cost}. Solved: {filled} {solved_cost}") 
+                
+                if not test_valid(S_masked, filled):
+                    print(f"BAD MASK: {X}, {Y}, {S_masked}. Actual: {S} {actual_cost}. Solved: {filled} {solved_cost}")
+                elif solved_cost > actual_cost:
+                    print(f"BAD COST: {X}, {Y}, {S_masked}. Actual: {S} {actual_cost}. Solved: {filled} {solved_cost}") 
                 else:
                     #print(f"PASS: {X}, {Y}, {S_masked}. Actual: {S} {actual_cost}. Solved: {filled} {solved_cost}")
                     pass
     print("End of tests")
 
 if __name__ == "__main__":
-    for L in range(1,10+1):
+    for L in range(1,6+1):
         do_test(L)

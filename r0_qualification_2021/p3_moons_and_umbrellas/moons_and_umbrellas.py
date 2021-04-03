@@ -62,7 +62,7 @@ def fill_sec(a, length, c, X, Y):
             # Combined cost of pairs is negative
             if length % 2 == 1:
                 # Even number of elements
-                if Y < 0:
+                if Y < 0 or length <= 1: # Bug fix: Can't modify if only 1 char.
                     return toggle_generator_n(length)
                 else:
                     # Can save cost by not toggling the last pair:
@@ -70,7 +70,7 @@ def fill_sec(a, length, c, X, Y):
                     return toggle_generator_n(length - 1) + "J"
             else:
                 # Odd number of elements
-                if X < 0:
+                if X < 0 or length <= 1: # Bug fix: Can't modify if only 1 char. 
                     return toggle_generator_n(length)
                 else:
                     # Can save cost by not toggling the last pair:
