@@ -1,8 +1,10 @@
 import math
-import numpy as np 
+import itertools
+
 
 def reverse(s):
     return s[::-1]
+
 
 def eval_cost(X, Y, S):
     cost = 0
@@ -12,8 +14,8 @@ def eval_cost(X, Y, S):
             cost += X
         elif a == "J" and b == "C":
             cost += Y
-        
     return cost
+
 
 toggle_map = {
     "C": "J",
@@ -21,41 +23,81 @@ toggle_map = {
     "?": "?"
 }
 
+
 def toggle(S):
     # "CCJ" -> "JJC"
     return "".join([toggle_map[x] for x in S])
 
+
+def toggle_generator():
+    # CJCJCJCJ....
+    while True:
+        yield "C"
+        yield "J"
+
+
+def toggle_generator_n(n):
+   return "".join(itertools.islice(toggle_generator(), n))
+
+
 def fill_sec(a, length, c, X, Y):
+    assert length > 0
     #print(f"TRACE: {a, length, c, X, Y}")
     if a == "C" and c == "C":
-        if X > 0 and Y > 0:
+        if X + Y >= 0:
+            # For every CJ, there must be a JC.
+            # If the combined cost is positive, leave as CC...
             return "C" * length
         else:
-            raise Exception("Todo 1")
+            return toggle_generator_n(length)
     if a == "C" and c == "J":
-        if X > 0 and Y > 0:
+        if X + Y >= 0:
+            # For every additional CJ, there must be an additional JC.
+            # If the combined cost is positive, leave as CC...J
             return "C" * length
         else:
-            raise Exception("Todo 2")
+            return toggle_generator_n(length)
     if a == "C" and c == "?":
-        if X > 0 and Y > 0:
-            return "C" * length
+        if X + Y < 0:
+            # Combined cost of pairs is negative
+            if length % 2 == 1:
+                # Even number of elements
+                if Y < 0:
+                    return toggle_generator_n(length)
+                else:
+                    # Can save cost by not toggling the last pair:
+                    # CJJ
+                    return toggle_generator_n(length - 1) + "J"
+            else:
+                # Odd number of elements
+                if X < 0:
+                    return toggle_generator_n(length)
+                else:
+                    # Can save cost by not toggling the last pair:
+                    # CJCC
+                    return toggle_generator_n(length - 1) + "C"
         else:
-            raise Exception("Todo 3")
+            if X < 0:
+                # Value of CJ will not offset cost of JC
+                return "C" + "J" * (length - 1)
+            else:
+                # Value of JC will not offset cost of CJ
+                return "C" * length
     if a == "?" and c == "?":
-        if X > 0 and Y > 0:
-            return "C" * length
+        if X < Y:
+            # CJ is more valuable (or less costly) => start with C
+            return fill_sec("C", length, c, X, Y)
         else:
-            raise Exception("Todo 4")
+            return fill_sec("J", length, c, X, Y)
     if a == "?" and c != "?":
         # symetry
         #print(f"R1 TRACE: {a, length, c, X, Y}")
-        return reverse(fill_sec(c, length, a, Y, X))
+        # The last (first) letter shouldn't be returned, so drop this when reversing
+        return reverse(fill_sec(c, length + 1, a, Y, X)[1:])
     if a == "J":
         # symetry
         #print(f"R2 TRACE: {a, length, c, X, Y}")
         return toggle(fill_sec(toggle(a), length, toggle(c), Y, X))
-
     raise Exception("Uncovered case") # should never happen
 
 
@@ -78,6 +120,7 @@ def fill(X, Y, S):
         raise Exception("Uncovered case") # should never happen
     return new_s
 
+
 def solve(X, Y, S):
     #print(S)
     filled = fill(X, Y, S)
@@ -85,6 +128,7 @@ def solve(X, Y, S):
     cost = eval_cost(X, Y, filled)
     #print(cost)
     return cost
+
 
 if __name__ == "__main__":
     T = int(input())
