@@ -50,9 +50,9 @@ def bkcalc(fwdSP_map, As):
     # As: Answers to this question
     bkSP_map = {}
 
+    s_q_true = score_q(As, "T")
+    s_q_false = score_q(As, "F")
     for s, p in fwdSP_map.items():
-        s_q_true = score_q(As, "T")
-        s_q_false = score_q(As, "F")
         bks_true = sub_score(s, s_q_true) # subtract because calculating backwards
         bks_false = sub_score(s, s_q_false)
         if all_positive(bks_true):
@@ -90,9 +90,11 @@ def fwdcalc(bkSP_map, As, fwdbkSP_map):
     return fwdSP_map, sel, sel_perms, sel_perms_denom
 
 def solve(N, Q, A, S):
+    #print("TraceA")
     fwdSP_map = {tuple(S): 1}
     fwdbkSP_maps = [None] * Q # need to fill
     fwdbkSP_maps.append(fwdSP_map)
+    #print("TraceB")
     
     # back calc
     for i in range(Q-1, 0, -1):
@@ -101,7 +103,8 @@ def solve(N, Q, A, S):
         bkSP_map = bkcalc(fwdSP_map, As)
         fwdbkSP_maps[i] = bkSP_map
         fwdSP_map = bkSP_map
-    
+    #print("TraceC")
+
     #print(fwdbkSP_maps)
     
     bkSP_map = {tuple([0]*N): 1}
@@ -115,8 +118,10 @@ def solve(N, Q, A, S):
         y += sel
         sel_perms_total, sel_perms_denom_total = add_frac(sel_perms_total, sel_perms_denom_total, sel_perms, sel_perms_denom)
         bkSP_map = fwdSP_map
+    #print("TraceD")
     
     z, w = normalise(sel_perms_total, sel_perms_denom_total)
+    #print("TraceE")
     return y, z, w
 
 if __name__ == "__main__":
