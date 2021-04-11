@@ -71,8 +71,10 @@ def fwdcalc(bkSP_map, As, fwdbkSP_map):
         s_q_false = score_q(As, "F")
         fwds_true = add_score(s, s_q_true) # add
         fwds_false = add_score(s, s_q_false)
-        inc(fwdSP_map, fwds_true, p)
-        inc(fwdSP_map, fwds_false, p)
+        if fwds_true in fwdbkSP_map: # Speed up: no point in tracking unreachable states
+            inc(fwdSP_map, fwds_true, p)
+        if fwds_false in fwdbkSP_map:
+            inc(fwdSP_map, fwds_false, p)
         perms_true += p * fwdbkSP_map.get(fwds_true, 0)
         perms_false += p * fwdbkSP_map.get(fwds_false, 0)
     
